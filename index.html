@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Justin Y. Detector</title>
+
+		<meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<meta name="author" content="literalchaos.de">
+		<meta name="description" content="Check if Justin Y. has left a comment under a video">
+
+		<link rel="icon" href="https://i.imgur.com/bv142qZ.png">
+
+		<link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
+		<style>
+			@media (max-width: 500px) {
+				body {
+					padding: 0px 20px;
+				}
+
+				#check-input {
+					width: 100% !important;
+				}
+
+				h1 {
+					flex-direction: column;
+				}
+
+				/*h1 > img {
+					height: 116px !important;
+				}*/
+			}
+
+			html, body {
+				text-align: center;
+				background-color: #ecf0f1;
+				font-family: 'Cabin', Arial, sans-serif;
+				margin: 0px;
+			}
+
+			h1 {
+				font-size: 3em;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			h1 > img {
+				height: 58px;
+			}
+
+			#check-input {
+				box-sizing: border-box;
+				margin: 20px 0px;
+				font-size: 1.5em;
+				width: 480px;
+				text-align: center;
+				border-style: solid;
+				border-color: grey;
+				border-width: 1px;
+			}
+
+			#check-button {
+				background-color: #27ae60;
+				color: white;
+				font-family: 'Cabin', Arial, sans-serif;
+				font-size: 2em;
+				border-style: none;
+				padding: 10px 20px;
+				border-radius: 10px;
+				cursor: pointer;
+			}
+
+			#check-button:hover {
+				background-color: #2ecc71;
+			}
+
+			#check-button:active {
+				transform: scale(0.95);
+			}
+
+			#result {
+				font-size: 1.2em;
+				margin-top: 20px;
+			}
+
+			#result-negative {
+				color: #c0392b;
+			}
+
+			footer {
+				font-size: 0.8em;
+				position: fixed;
+				bottom: 5px;
+				right: 5px;
+			}
+		</style>
+
+		<script src="https://unpkg.com/js-video-url-parser@0.2.8/dist/jsVideoUrlParser.min.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script type="text/javascript">
+			const videoidRE = /^[a-zA-Z0-9_-]{11}$/;
+
+			function checkAndRetrieve(input, cb) {
+				let video_id;
+				if (videoidRE.test(input)) {
+					video_id = input;
+				} else {
+					// try to parse the url
+					let result = urlParser.parse(input);
+
+					if (result == undefined) {
+						return cb(false, null);
+					} else {
+						if (result.provider == "youtube") {
+							video_id = result.id;
+						} else {
+							return cb(false, null);
+						}
+					}
+				}
+
+				axios.get(`/api/check-and-retrieve?v=${video_id}`).then(resp => {
+					let comment_id = resp.data.comment_id;
+					let video_id = resp.data.video_id;
+
+					cb(true, { comment_id, video_id });
+				}).catch(() => {
+					cb(false, null);
+				});
+			}
+
+			function hideResults() {
+				document.querySelectorAll(".result").forEach(elem => {
+					elem.style.display = "none"
+				});
+			}
+
+			function showInvalidResult() {
+				hideResults();
+				document.querySelector("#result-invalid").style.display = "block";
+			}
+
+			function showNegativeResult() {
+				hideResults();
+				document.querySelector("#result-negative").style.display = "block";
+			}
+
+			function showPositiveResult(result) {
+				let video_id = result.video_id;
+				let comment_id = result.comment_id;
+
+				hideResults();
+				document.querySelector("#result-positive").style.display = "block";
+
+				document.querySelector("#result-url").href = urlParser.create({
+					videoInfo: { 
+						provider: "youtube", 
+						id: video_id, 
+						mediaType: "video"
+					}, 
+					params: { 
+						lc: comment_id 
+					}
+				});
+			}
+
+			function checkButtonHandler() {
+				let input = document.querySelector("#check-input").value;
+
+				hideResults();
+
+				if (input == "") return;
+
+				checkAndRetrieve(input, function(success, result) {
+					if (!success) return showInvalidResult();
+
+					if (result.comment_id != null) {
+						showPositiveResult(result);
+					} else {
+						showNegativeResult();
+					}
+				});
+			}
+
+			window.addEventListener("DOMContentLoaded", function() {
+				// attach required event listeners
+				document.querySelector("#check-button").onclick = checkButtonHandler;
+				document.querySelector("#check-input").onkeypress = function(evt) {
+					if (evt.keyCode == 13) {
+						checkButtonHandler();
+					}
+				}
+			});
+		</script>
+	</head>
+	<body>
+		<h1><img src="https://i.imgur.com/bv142qZ.png"> Justin Y. Detector</h1>
+
+		<div>Enter any YouTube URL below and check if Justin Y. has left a comment there.</div>
+
+		<div id="check-form">
+			<input type="text" id="check-input" placeholder="YouTube URL or video id"><br>
+			<button id="check-button">Check</button>
+		</div>
+
+		<div id="result">
+			<div class="result" id="result-invalid" style="display: none">Invalid URL :(</div>
+			<div class="result" id="result-negative" style="display: none">Justin Y. has not left a comment here. Yet.</div>
+			<div class="result" id="result-positive" style="display: none">
+				<div>Justin Y. has left a comment:</div>
+				<a href="" id="result-url" target="_blank">Check out the comment here.</a>
+			</div>
+		</div>
+
+		<footer>
+			<a href="https://github.com/jangxx/justiny-detector" target="_blank">GitHub</a> | A project by <a target="_blank" href="https://literalchaos.de">literalchaos.de</a>
+		</footer>
+	</body>
+</html>
