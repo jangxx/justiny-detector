@@ -1,0 +1,24 @@
+{
+  "name": "justiny-detector",
+  "version": "1.0.0",
+  "description": "Searches YouTube comments for comments by Justin Y.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.literalchaos.de:jan/justiny-detector.git"
+  },
+  "author": "jangxx <jangxx@protonmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "googleapis": "^37.2.0",
+    "knex": "^0.16.3",
+    "loglevel": "^1.6.1",
+    "sqlite": "^3.0.2"
+  }
+}
