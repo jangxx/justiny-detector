@@ -97,7 +97,7 @@ function checkVideo(id) {
 	}).catch(err => {
 		log.error("[YouTube]", err.message);
 		return null; // store the null result in db so we don't recheck the same invalid urls over and over again
-	})
+	});
 }
 
 function storeComment(video_id, comment_id) {
