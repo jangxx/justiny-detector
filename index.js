@@ -12,6 +12,7 @@ const log = require('loglevel');
 const { google } = require('googleapis');
 const knex = require('knex')(knexConfig[process.env.NODE_ENV || "development"]);
 const moment = require('moment');
+const urlParser = require('js-video-url-parser');
 
 if (process.env.LOG != undefined) {
 	log.setLevel(process.env.LOG);
@@ -62,6 +63,22 @@ app.get("/api/check-and-retrieve", function(req, res) {
 		log.error(err.message);
 		return res.sendStatus(500);
 	});
+});
+
+app.get("/api/parse-url", function(req, res) {
+	let url = req.query.url;
+
+	if (url == undefined || url == "") {
+		return res.sendStatus(400);
+	}
+
+	let parseResult = urlParser.parse(url);
+
+	if (parseResult.mediaType != "video" || parseResult.provider != "youtube") {
+		return res.sendStatus(404);
+	}
+
+	return res.json({ video_id: parseResult.id });
 });
 
 app.get("/", function(req, res) {
