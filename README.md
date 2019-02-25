@@ -32,7 +32,7 @@ After you have set your environment variables install the `knex` cli:
 
 and run
 
-	knex migrate:latest
+	knex migrate:latest --env production
 
 to initialize the database.
 
