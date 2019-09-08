@@ -122,7 +122,7 @@ function storeComment(video_id, comment_id) {
 }
 
 function updateComment(video_id, comment_id) {
-	return knex("sighting").where({ video_id }).update({
+	return knex("sightings").where({ video_id }).update({
 		comment_id, 
 		last_checked: moment().utc().format("YYYY-MM-DD HH:mm:ss") 
 	}).then(() => comment_id);

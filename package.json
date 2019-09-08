@@ -1,6 +1,6 @@
 {
   "name": "justiny-detector",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Searches YouTube comments for comments by Justin Y.",
   "main": "index.js",
   "scripts": {
