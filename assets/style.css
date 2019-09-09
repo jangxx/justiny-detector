@@ -111,11 +111,29 @@ footer {
     background-color: white;
     padding: 20px;
     text-align: left;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+#collection .video::after {
+    content: "\25CF";
+    font-size: 1em;
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    bottom: -23px;
+    left: 0px;
+    display: block;
+    width: 100%;
+    text-align: center;
+    color: grey;
+}
+
+#collection .video:last-of-type::after {
+    content: "";
 }
 
 #collection .video .title {
-    font-size: 1.5em;
+    font-size: 1.2em;
 }
 
 #collection .video .channel {
@@ -130,4 +148,9 @@ footer {
 #collection .video .meta {
     font-size: 0.8em;
     margin-top: 10px;
+    color: grey;
+}
+
+#collection .video .meta a {
+    color: grey;
 }

@@ -9,6 +9,8 @@ const youtube = google.youtube("v3");
 const JUSTINY_CHANNEL = "UCiTfB-A55Vq2fB610vaWJVA";
 const RECHECK_DELAY = (process.env.RECHECK_DELAY !== undefined) ? process.env.RECHECK_DELAY : 604800; // 7 days is the default
 
+let collectionUpdateRunning = false;
+
 function checkVideo(id) {
 	log.info(`Checking YouTube API for video ${id}`);
 
@@ -53,15 +55,21 @@ function updateCommentCollection(remaining_ids, snippets = {}) {
         id: remaining_ids.slice(0, 50).join(",")
     }).then(resp => {
         let fetched_ids = new Set();
+
         for(let comment of resp.data.items) {
             fetched_ids.add(comment.id);
             snippets[comment.id] = comment;
         }
 
         remaining_ids = remaining_ids.filter(id => !fetched_ids.has(id));
-
-        log.info(`Updated collection data for ${fetched_ids.size} comments.`);
-        return updateCommentCollection(remaining_ids, snippets);
+        
+        if (fetched_ids.size == 0) {
+            return Promise.resolve(snippets);
+        } else {
+            log.info(`Updated collection data for ${fetched_ids.size} comments.`);
+            return updateCommentCollection(remaining_ids, snippets);
+        }
+        
     }, err => {
         log.error("[YouTube]", err.message);
         return snippets;
@@ -83,9 +91,13 @@ function updateVideoCollection(remaining_ids, snippets = {}) {
         }
 
         remaining_ids = remaining_ids.filter(id => !fetched_ids.has(id));
-
-        log.info(`Updated collection data for ${fetched_ids.size} videos.`);
-        return updateVideoCollection(remaining_ids, snippets);
+        
+        if (fetched_ids.size == 0) {
+            return Promise.resolve(snippets);
+        } else {
+            log.info(`Updated collection data for ${fetched_ids.size} videos.`);
+            return updateVideoCollection(remaining_ids, snippets);
+        }
     }, err => {
         log.error("[YouTube]", err.message);
         return snippets;
@@ -131,44 +143,64 @@ async function updateComment(video_id, comment_id) {
 }
 
 async function getCollection(orderBy, orderDirection = "DESC") {
-    let rows = await knex.select("sightings.video_id", "sightings.comment_id").from("sightings").leftJoin("video_data").where("video_data.video_id", "is", null).andWhere("sightings.comment_id", "is not", null);
+    if (!collectionUpdateRunning) {
+        collectionUpdateRunning = true;
+        try {
+            let rows = await knex.select("sightings.video_id", "sightings.comment_id").from("sightings").leftJoin("video_data").where("video_data.video_id", "is", null).andWhere("video_data.comment_id", "is", null).andWhere("sightings.comment_id", "is not", null);
 
-    let video_ids = [], comment_ids = [], pairs = [];
+            let video_ids = [], comment_ids = [], pairs = [];
 
-    rows.forEach(row => {
-        video_ids.push(row.video_id);
-        comment_ids.push(row.comment_id);
-        pairs.push([ row.video_id, row.comment_id ]);
-    });
+            rows.forEach(row => {
+                video_ids.push(row.video_id);
+                comment_ids.push(row.comment_id);
+                pairs.push([ row.video_id, row.comment_id ]);
+            });
 
-    if (video_ids.length > 0 && comment_ids.length > 0) {
-        // update database data from the youtube api
-        let result = await updateCollection(video_ids, comment_ids);
-        
-        let commentSnippets = result[0];
-        let videoSnippets = result[1];
+            if (video_ids.length > 0 && comment_ids.length > 0) {
+                // update database data from the youtube api
+                let result = await updateCollection(video_ids, comment_ids);
+                
+                let commentSnippets = result[0];
+                let videoSnippets = result[1];
 
-        if (Object.keys(videoSnippets).length != Object.keys(commentSnippets).length) {
-            return;
+                let insertionPromises = [];
+
+                for (let pair of pairs) {
+                    if (videoSnippets[pair[0]] == undefined && commentSnippets[pair[1]] == undefined) {
+                        continue;
+                    }
+
+                    if (videoSnippets[pair[0]] != undefined && commentSnippets[pair[1]] == undefined) {
+                        // comment is not fetchable -> insert empty entry so we dont try to fetch it again
+                        insertionPromises.push(knex("video_data").insert({
+                            video_id: pair[0]
+                        }));
+                    } else if (videoSnippets[pair[0]] == undefined && commentSnippets[pair[1]] != undefined) {
+                        // video is not fetchable -> insert empty entry so we dont try to fetch it again
+                        insertionPromises.push(knex("video_data").insert({
+                            comment_id: pair[1]
+                        }));
+                    } else {
+                        insertionPromises.push(knex("video_data").insert({
+                            video_id: pair[0],
+                            video_title: videoSnippets[pair[0]].snippet.title,
+                            comment_id: pair[1],
+                            comment_text: commentSnippets[pair[1]].snippet.textOriginal,
+                            channel_name: videoSnippets[pair[0]].snippet.channelTitle,
+                            post_date: moment(commentSnippets[pair[1]].snippet.publishedAt).utc().format("YYYY-MM-DD HH:mm:ss") 
+                        }));
+                    }
+                }
+
+                await Promise.all(insertionPromises);
+            }
         }
-
-        let insertionPromises = [];
-
-        for (let pair of pairs) {
-            insertionPromises.push(knex("video_data").insert({
-                video_id: pair[0],
-                video_title: videoSnippets[pair[0]].snippet.title,
-                comment_id: pair[1],
-                comment_text: commentSnippets[pair[1]].snippet.textOriginal,
-                channel_name: videoSnippets[pair[0]].snippet.channelTitle,
-                post_date: moment(commentSnippets[pair[1]].snippet.publishedAt).utc().format("YYYY-MM-DD HH:mm:ss") 
-            }));
+        finally {
+            collectionUpdateRunning = false;
         }
-
-        await Promise.all(insertionPromises);
     }
 
-    rows = await knex.select("video_id", "comment_id", "comment_text", "channel_name", "post_date", "video_title").from("video_data").orderBy(orderBy, orderDirection);
+    let rows = await knex.select("video_id", "comment_id", "comment_text", "channel_name", "post_date", "video_title").from("video_data").where("comment_text", "is not", null).orderBy(orderBy, orderDirection);
 
     let collection = [];
 
