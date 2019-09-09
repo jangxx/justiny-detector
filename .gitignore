@@ -59,4 +59,5 @@ typings/
 .env
 
 # development database
-dev.sqlite3
+*.sqlite3
+*.sqlite

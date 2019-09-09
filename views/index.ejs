@@ -9,97 +9,9 @@
 		<meta name="description" content="Check if Justin Y. has left a comment under a video">
 
 		<link rel="icon" href="https://i.imgur.com/bv142qZ.png">
+		<link rel="stylesheet" href="/assets/style.css">
 
 		<link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
-		<style>
-			@media (max-width: 500px) {
-				body {
-					padding: 0px 20px;
-				}
-
-				#check-input {
-					width: 100% !important;
-				}
-
-				#info-text {
-					width: 100%;
-				}
-
-				h1 {
-					flex-direction: column;
-				}
-			}
-
-			html, body {
-				text-align: center;
-				background-color: #ecf0f1;
-				font-family: 'Cabin', Arial, sans-serif;
-				margin: 0px;
-			}
-
-			h1 {
-				font-size: 3em;
-				display: flex;
-				justify-content: center;
-				align-items: center;
-			}
-
-			h1 > img {
-				height: 58px;
-			}
-
-			#check-input {
-				box-sizing: border-box;
-				margin: 20px 0px;
-				font-size: 1.5em;
-				width: 480px;
-				text-align: center;
-				border-style: solid;
-				border-color: grey;
-				border-width: 1px;
-			}
-
-			#check-button {
-				background-color: #27ae60;
-				color: white;
-				font-family: 'Cabin', Arial, sans-serif;
-				font-size: 2em;
-				border-style: none;
-				padding: 10px 20px;
-				border-radius: 10px;
-				cursor: pointer;
-			}
-
-			#check-button:hover {
-				background-color: #2ecc71;
-			}
-
-			#check-button:active {
-				transform: scale(0.95);
-			}
-
-			#result {
-				font-size: 1.2em;
-				margin-top: 20px;
-			}
-
-			#result-negative {
-				color: #c0392b;
-			}
-
-			#info-text {
-				max-width: 800px;
-				margin-left: auto;
-				margin-right: auto;
-			}
-
-			footer {
-				font-size: 0.8em;
-				position: fixed;
-				bottom: 5px;
-				right: 5px;
-			}
-		</style>
 
 		<script src="https://unpkg.com/js-video-url-parser@0.2.8/dist/jsVideoUrlParser.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -206,6 +118,8 @@
 			Enter any YouTube URL below and check if Justin Y. has left a comment there.
 			You can also install the <a target="_blank" href="https://gist.github.com/jangxx/998baf5fd94a6bd6cf400d54c631b213/raw/justiny_detector_integration.user.js">Userscript</a> to automatically show the comment links on each video.
 			If you are on iOS, you can also try the <a target="_blank" href="https://www.icloud.com/shortcuts/6e972db606d7465d8b26c5b0d6040bd0">Shortcut</a>, which works by sharing a link straight from the YouTube App.
+			<p>
+			You can find the collection of all detected videos <a href="/collection">here</a>.
 		</div>
 
 		<div id="check-form">
