@@ -92,7 +92,6 @@ function updateVideoCollection(remaining_ids, snippets = {}) {
     });
 }
 
-
 function checkDatabase(video_id) {
     return knex.select("comment_id", "last_checked").from("sightings").where({ video_id }).then(rows => {
         if (rows.length == 0) {
@@ -116,56 +115,75 @@ function checkDatabase(video_id) {
     });
 }
 
-function storeComment(video_id, comment_id) {
-	return knex("sightings").insert({ video_id, comment_id }).then(() => comment_id);
+async function storeComment(video_id, comment_id) {
+    await knex("sightings").insert({ video_id, comment_id });
+    
+    return comment_id;
 }
 
-function updateComment(video_id, comment_id) {
-	return knex("sightings").where({ video_id }).update({
+async function updateComment(video_id, comment_id) {
+	await knex("sightings").where({ video_id }).update({
 		comment_id, 
 		last_checked: moment().utc().format("YYYY-MM-DD HH:mm:ss") 
-	}).then(() => comment_id);
+    });
+    
+    return comment_id;
 }
 
-function getCollection() {
-    // get videos which we have not updated yet
-    return knex.select("sightings.video_id", "sightings.comment_id").from("sightings").leftJoin("video_data").where("video_data.video_id", "is", null).andWhere("sightings.comment_id", "is not", null).then(rows => {
-        let video_ids = [], comment_ids = [], pairs = [];
+async function getCollection(orderBy, orderDirection = "DESC") {
+    let rows = await knex.select("sightings.video_id", "sightings.comment_id").from("sightings").leftJoin("video_data").where("video_data.video_id", "is", null).andWhere("sightings.comment_id", "is not", null);
 
-        rows.forEach(row => {
-            video_ids.push(row.video_id);
-            comment_ids.push(row.comment_id);
-            pairs.push([ row.video_id, row.comment_id ]);
-        });
+    let video_ids = [], comment_ids = [], pairs = [];
 
-        return { video_ids, comment_ids, pairs };
-    }).then(({ video_ids, comment_ids, pairs }) => {
-        if (video_ids.length > 0 && comment_ids.length > 0) {
-            // update database data from the youtube api
-            return updateCollection(video_ids, comment_ids).then(result => {
-                let commentSnippets = result[0];
-                let videoSnippets = result[1];
-
-                if (Object.keys(videoSnippets).length != Object.keys(commentSnippets).length) {
-                    return;
-                }
-
-                let insertionPromises = [];
-
-                for (let pair of pairs) {
-                    insertionPromises.push(knex("video_data").insert({
-                        video_id: pair[0],
-                        comment_id: pair[1],
-                        comment_text: commentSnippets[pair[1]].snippet.textOriginal,
-                        channel_name: videoSnippets[pair[0]].snippet.channelTitle,
-                        post_date: moment(commentSnippets[pair[1]].snippet.publishedAt).utc().format("YYYY-MM-DD HH:mm:ss") 
-                    }));
-                }
-
-                return Promise.all(insertionPromises);
-            });
-        }
+    rows.forEach(row => {
+        video_ids.push(row.video_id);
+        comment_ids.push(row.comment_id);
+        pairs.push([ row.video_id, row.comment_id ]);
     });
+
+    if (video_ids.length > 0 && comment_ids.length > 0) {
+        // update database data from the youtube api
+        let result = await updateCollection(video_ids, comment_ids);
+        
+        let commentSnippets = result[0];
+        let videoSnippets = result[1];
+
+        if (Object.keys(videoSnippets).length != Object.keys(commentSnippets).length) {
+            return;
+        }
+
+        let insertionPromises = [];
+
+        for (let pair of pairs) {
+            insertionPromises.push(knex("video_data").insert({
+                video_id: pair[0],
+                video_title: videoSnippets[pair[0]].snippet.title,
+                comment_id: pair[1],
+                comment_text: commentSnippets[pair[1]].snippet.textOriginal,
+                channel_name: videoSnippets[pair[0]].snippet.channelTitle,
+                post_date: moment(commentSnippets[pair[1]].snippet.publishedAt).utc().format("YYYY-MM-DD HH:mm:ss") 
+            }));
+        }
+
+        await Promise.all(insertionPromises);
+    }
+
+    rows = await knex.select("video_id", "comment_id", "comment_text", "channel_name", "post_date", "video_title").from("video_data").orderBy(orderBy, orderDirection);
+
+    let collection = [];
+
+    rows.forEach(row => {
+        collection.push({
+            content: row.comment_text,
+            video_id: row.video_id,
+            comment_id: row.comment_id,
+            video_title: row.video_title,
+            channel_name: row.channel_name,
+            date: moment(row.post_date, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD HH:mm")
+        });
+    });
+
+    return collection;
 }
 
 module.exports = {

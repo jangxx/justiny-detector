@@ -5,6 +5,7 @@ exports.up = function(knex) {
         table.string("video_id", 12);
         table.string("comment_id", 40);
         table.text("comment_text");
+        table.text("video_title");
         table.text("channel_name");
 		table.datetime("post_date");
 

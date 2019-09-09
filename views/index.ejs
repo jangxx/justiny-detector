@@ -110,6 +110,10 @@
 				}
 			});
 		</script>
+
+		<% if (trackingCode != undefined) { %>
+			<%- include(trackingCode) %>
+		<% } %>
 	</head>
 	<body>
 		<h1><img src="https://i.imgur.com/bv142qZ.png"> Justin Y. Detector</h1>
@@ -119,7 +123,7 @@
 			You can also install the <a target="_blank" href="https://gist.github.com/jangxx/998baf5fd94a6bd6cf400d54c631b213/raw/justiny_detector_integration.user.js">Userscript</a> to automatically show the comment links on each video.
 			If you are on iOS, you can also try the <a target="_blank" href="https://www.icloud.com/shortcuts/6e972db606d7465d8b26c5b0d6040bd0">Shortcut</a>, which works by sharing a link straight from the YouTube App.
 			<p>
-			You can find the collection of all detected videos <a href="/collection">here</a>.
+			You can find the collection of all detected comments <a href="/collection">here</a>.
 		</div>
 
 		<div id="check-form">

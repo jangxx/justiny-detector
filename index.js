@@ -58,13 +58,23 @@ app.get("/api/parse-url", function(req, res) {
 });
 
 app.get("/", function(req, res) {
-	res.render('index');
+	res.render('index', { trackingCode: process.env.TRACKING_CODE_FILE });
 });
 
 app.get("/collection", function(req, res) {
-	getCollection();
+	let orderDirection = "DESC";
+	if (req.query.direction === "asc") {
+		orderDirection = "ASC";
+	}
 
-	res.render("collection", { comments: [] });
+	let inverseOrder = (orderDirection == "DESC") ? "ASC" : "DESC";
+
+	getCollection("post_date", orderDirection).then(collection => {
+		res.render("collection", { comments: collection, inverseOrder, trackingCode: process.env.TRACKING_CODE_FILE });
+	}).catch(err => {
+		log.error("[collection]", err.message);
+		res.render("collection", { comments: [], inverseOrder, trackingCode: process.env.TRACKING_CODE_FILE });
+	});
 });
 
 app.listen(process.env.PORT, process.env.ADDRESS, () => {

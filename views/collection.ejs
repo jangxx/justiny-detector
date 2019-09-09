@@ -12,6 +12,10 @@
 		<link rel="stylesheet" href="/assets/style.css">
 
 		<link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
+
+		<% if (trackingCode != undefined) { %>
+			<%- include(trackingCode) %>
+		<% } %>
 	</head>
 	<body>
 		<h1><img src="https://i.imgur.com/bv142qZ.png"> Justin Y. Collection</h1>
@@ -21,15 +25,24 @@
             <a href="/">Go back to detecting videos</a>.
 		</div>
 
+		<div style="margin-top: 10px">
+			<% if (inverseOrder == "DESC") { %>
+				<a href="/collection?direction=desc"><button>Sort newest to oldest</button></a>
+			<% } else { %>
+				<a href="/collection?direction=asc"><button>Sort oldest to newest</button></a>
+			<% } %>
+		</div>
+
 		<div id="collection">
             <% for (let comment_data of comments) { %>
             <div class="video">
-                <a href="https://www.youtube.com/watch?<%- comment_data.video_id %>" class="title"><%= comment_data.video_title %></a>
+                <a target="_blank" href="https://www.youtube.com/watch?v=<%- comment_data.video_id %>" class="title"><%= comment_data.video_title %></a>
+				<div class="channel"><%= comment_data.channel_name %></div>
 
                 <div class="content"><%= comment_data.content %></div>
 
                 <div class="meta">
-                    <a href="https://www.youtube.com/watch?<%- comment_data.video_id %>&lc=<%- comment_data.comment_id %>">Comment Link</a> | Posted on <%= comment_data.date %>
+                    <a target="_blank" href="https://www.youtube.com/watch?v=<%- comment_data.video_id %>&lc=<%- comment_data.comment_id %>">Comment Link</a> | Posted on <%= comment_data.date %>
                 </div>
             </div>
             <% } %>
