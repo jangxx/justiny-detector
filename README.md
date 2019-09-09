@@ -25,6 +25,8 @@ Port to bind the webserver to
 [optional] Set the loglevel (See the [loglevel docs](https://www.npmjs.com/package/loglevel) for allowed values) (Default: `"error"`)
 - `RECHECK_DELAY`  
 [optional] Number of seconds after which a video is queried again if no comment could be found the last time. (Default: 604800)
+- `TRACKING_CODE_FILE`  
+[optional] Specify the path of a file containing some additional text/code to be included in the header. The path can either be absolute, or relative to the *views/* directory.
 
 After you have set your environment variables install the `knex` cli:
 
@@ -43,3 +45,12 @@ If you have installed everything, simply run
 	node ./
 
 to start the server.
+
+## Update
+
+You can simply pull this repo to get all the updated features.
+Afterwards you need to run
+
+	knex migrate:latest --env production
+
+again, to update the database with new/changed tables.
