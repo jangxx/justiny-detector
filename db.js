@@ -146,7 +146,7 @@ async function getCollection(orderBy, orderDirection = "DESC") {
     if (!collectionUpdateRunning) {
         collectionUpdateRunning = true;
         try {
-            let rows = await knex.select("sightings.video_id", "sightings.comment_id").from("sightings").leftJoin("video_data").where("video_data.video_id", "is", null).andWhere("video_data.comment_id", "is", null).andWhere("sightings.comment_id", "is not", null);
+            let rows = await knex.select("sightings.video_id", "sightings.comment_id").from("sightings").leftJoin("video_data", "sightings.video_id", "video_data.video_id").where("video_data.video_id", "is", null).andWhere("video_data.comment_id", "is", null).andWhere("sightings.comment_id", "is not", null);
 
             let video_ids = [], comment_ids = [], pairs = [];
 
