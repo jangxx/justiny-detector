@@ -52,17 +52,11 @@ function updateCommentCollection(remaining_ids, snippets = {}) {
 
     if (remaining_ids.length == 0) return Promise.resolve(snippets);
 
-    // console.log(remaining_ids, remaining_ids.length);
-
-    // console.log(remaining_ids.slice(0, 50).join(","));
-
     return youtube.comments.list({
         key: process.env.API_KEY,
         part: "snippet",
-        id: remaining_ids.slice(0, 10).join(",")
+        id: remaining_ids.slice(0, 20).join(",")
     }).then(resp => {
-        // console.log("resp:", resp);
-
         let fetched_ids = new Set();
 
         for(let comment of resp.data.items) {
@@ -75,7 +69,7 @@ function updateCommentCollection(remaining_ids, snippets = {}) {
         if (fetched_ids.size == 0) {
             // skip all ids in this request and try the next one
             log.debug(`Comment reply was empty; trying next set of comments.`);
-            return updateCommentCollection(remaining_ids.slice(10), snippets);
+            return updateCommentCollection(remaining_ids.slice(20), snippets);
         } else {
             log.info(`Updated collection data for ${fetched_ids.size} comments.`);
             return updateCommentCollection(remaining_ids, snippets);
@@ -263,8 +257,6 @@ async function fetchErrorCommentContent() {
             pairs.push([ row.s_vid, row.s_cid, row.id ]);
         }
     });
-
-    // console.log(pairs);
 
     let updated = 0;
 
