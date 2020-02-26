@@ -62,18 +62,36 @@ app.get("/", function(req, res) {
 });
 
 app.get("/collection", function(req, res) {
-	let orderDirection = "DESC";
-	if (req.query.direction === "asc") {
-		orderDirection = "ASC";
+	let orderDirection = "desc";
+
+	if ([ "desc", "asc", "recent" ].includes(req.query.order)) {
+		orderDirection = req.query.order;
 	}
 
-	let inverseOrder = (orderDirection == "DESC") ? "ASC" : "DESC";
+	let order = [{ column: "post_date", order: "desc" }];
 
-	getCollection("post_date", orderDirection).then(collection => {
-		res.render("collection", { comments: collection, inverseOrder, trackingCode: process.env.TRACKING_CODE_FILE });
+	switch(orderDirection) {
+		case "asc":
+			order = [{ column: "post_date", order: "asc" }];
+			break;
+		case "recent":
+			order = [{ column: "first_detected", order: "desc" }, { column: "post_date", order: "desc" }];
+			break;
+	}
+
+	getCollection(order).then(collection => {
+		res.render("collection", {
+			comments: collection, 
+			orderDirection,
+			trackingCode: process.env.TRACKING_CODE_FILE
+		});
 	}).catch(err => {
 		log.error("[collection]", err.message);
-		res.render("collection", { comments: [], inverseOrder, trackingCode: process.env.TRACKING_CODE_FILE });
+		res.render("collection", {
+			comments: [], 
+			orderDirection,
+			trackingCode: process.env.TRACKING_CODE_FILE
+		});
 	});
 });
 

@@ -26,10 +26,15 @@
 		</div>
 
 		<div style="margin-top: 10px">
-			<% if (inverseOrder == "DESC") { %>
-				<a href="/collection?direction=desc"><button>Sort newest to oldest</button></a>
-			<% } else { %>
-				<a href="/collection?direction=asc"><button>Sort oldest to newest</button></a>
+			<% if (orderDirection == "asc") { %>
+				<a href="/collection?order=desc" class="order-button"><button>Sort newest to oldest</button></a>
+				<a href="/collection?order=recent" class="order-button"><button>Sort by recently detected</button></a>
+			<% } else if (orderDirection == "desc") { %>
+				<a href="/collection?order=asc" class="order-button"><button>Sort oldest to newest</button></a>
+				<a href="/collection?order=recent" class="order-button"><button>Sort by recently detected</button></a>
+			<% } else if (orderDirection == "recent") { %>
+				<a href="/collection?order=desc" class="order-button"><button>Sort newest to oldest</button></a>
+				<a href="/collection?order=asc" class="order-button"><button>Sort oldest to newest</button></a>
 			<% } %>
 		</div>
 
@@ -39,10 +44,14 @@
                 <a target="_blank" href="https://www.youtube.com/watch?v=<%- comment_data.video_id %>" class="title"><%= comment_data.video_title %></a>
 				<div class="channel"><%= comment_data.channel_name %></div>
 
-                <div class="content"><%= comment_data.content %></div>
+                <div class="content"><%- comment_data.content %></div>
 
                 <div class="meta">
-                    <a target="_blank" href="https://www.youtube.com/watch?v=<%- comment_data.video_id %>&lc=<%- comment_data.comment_id %>">Comment Link</a> | Posted on <%= comment_data.date %>
+                    <span><a target="_blank" href="https://www.youtube.com/watch?v=<%- comment_data.video_id %>&lc=<%- comment_data.comment_id %>">Comment Link</a></span>
+					<span>Posted on <%= comment_data.date %></span>
+					<% if (comment_data.first_detected !== null) { %>
+						<span>First detected on <%= comment_data.first_detected %></span>
+					<% } %>
                 </div>
             </div>
             <% } %>
