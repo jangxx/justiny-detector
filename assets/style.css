@@ -20,10 +20,7 @@
     }
 
     footer {
-        bottom: 0px !important;
-        right: 0px !important;
         width: 100%;
-        background-color: white;
     }
 }
 
@@ -102,8 +99,10 @@ button {
 footer {
     font-size: 0.8em;
     position: fixed;
-    bottom: 5px;
-    right: 5px;
+    bottom: 0px;
+    right: 0px;
+    background-color: white;
+    padding: 5px;
 }
 
 #collection {
