@@ -1,3 +1,4 @@
+const path = require("path");
 const knexConfig = require('./knexfile');
 const knex = require('knex')(knexConfig[process.env.NODE_ENV || "development"]);
 const log = require('loglevel');
@@ -346,10 +347,15 @@ async function getCollection(order) {
     return collection;
 }
 
+function getFullDBPath() {
+    return path.resolve(knexConfig[process.env.NODE_ENV || "development"].connection.filename);
+}
+
 module.exports = {
     checkVideo,
     storeComment,
     updateComment,
     getCollection,
-    checkDatabase
+    checkDatabase,
+    getFullDBPath,
 };

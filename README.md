@@ -18,7 +18,6 @@ Path where you want the sqlite database to be placed
 API key from the [google API console](https://console.cloud.google.com)
 - `PORT`  
 Port to bind the webserver to
-
 - `ADDRESS`  
 [optional] Address to bind the webserver to (Default: `""`, which means all addresses)
 - `LOG`  
@@ -27,6 +26,8 @@ Port to bind the webserver to
 [optional] Number of seconds after which a video is queried again if no comment could be found the last time. (Default: 604800)
 - `TRACKING_CODE_FILE`  
 [optional] Specify the path of a file containing some additional text/code to be included in the header. The path can either be absolute, or relative to the *views/* directory.
+- `ALLOW_DB_DOWNLOAD`
+[optional] Allow downloading the entire database on the `/api/entire-db` endpoint.
 
 After you have set your environment variables install the `knex` cli:
 
@@ -42,7 +43,7 @@ to initialize the database.
 
 If you have installed everything, simply run
 
-	node ./
+	NODE_ENV="production" node ./
 
 to start the server.
 

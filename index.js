@@ -6,7 +6,7 @@ const express = require('express');
 const log = require('loglevel');
 const urlParser = require('js-video-url-parser');
 
-const { getCollection, checkDatabase } = require('./db');
+const { getCollection, checkDatabase, getFullDBPath } = require('./db');
 const videoidRE = /^[a-zA-Z0-9_-]{11}$/;
 
 if (process.env.LOG != undefined) {
@@ -55,6 +55,14 @@ app.get("/api/parse-url", function(req, res) {
 	}
 
 	return res.json({ video_id: parseResult.id });
+});
+
+app.get("/api/entire-db", function(req, res) {
+	if (process.env.ALLOW_DB_DOWNLOAD != "allow") {
+		return res.sendStatus(404);
+	}
+
+	return res.download(getFullDBPath(), "justiny-detector.sqlite3");
 });
 
 app.get("/", function(req, res) {
