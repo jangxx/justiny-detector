@@ -20,7 +20,7 @@
     "js-video-url-parser": "^0.2.8",
     "knex": "^0.19.5",
     "loglevel": "^1.7.0",
-    "moment": "^2.29.0",
+    "moment": "^2.29.2",
     "sqlite": "^3.0.6"
   }
 }
